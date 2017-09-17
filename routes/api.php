@@ -43,7 +43,7 @@ Route::group(['prefix' => 'db-test'], function () {
             $insert_ret = DB::insert("
 insert 
 into `users` (`name`, `email`, `password`, `created_at`) 
-value ('zhan', '$email', '123456', '$created_at')
+value ('zhan', '$email', '123456', '$created_at'), ('zhan01', '3909618255@qq.com', '123456' , '$created_at')
 ");
             return $insert_ret?'插入成功':'插入失败';
 
@@ -207,6 +207,82 @@ value ('zhan', '$email', '123456', '$created_at')
             // skip tack
         });
     });
+});
 
+//Route::group(['prefix' => 'blog'], function () {
+//    // 显示博客列表
+//    Route::get('show', 'BlogController@show');
+//    // 获取博客详情
+//    Route::get('index/{id}', 'BlogController@index');
+//    // 添加一条博客
+//    Route::post('store', 'BlogController@store');
+//});
+
+Route::group(['prefix' => 'test-model'], function () {
+    // 模型插入数据操作
+    Route::get('create', function (Request $request) {
+        // 如何使用模型来插入一条数据
+        // 使用create方法来插入数据，返回一个模型对象
+
+        // 第一种创建
+        $input = [
+            'user_id' => 99,
+            'title' => '博客的标题',
+            'content' => '博客的内容',
+            'ip' => $request->ip(),
+        ];
+//
+//        $blog = \App\Blog::create($input);
+//
+//        return response()->json($blog);
+
+        // 第二种插入
+        $blog = new \App\Blog($input);
+        $blog ->save();
+    });
+    // 根据主键查询
+    Route::get('index/{id}', function ($id) {
+        return response()->json(\App\Blog::find($id));
+    });
+    // 列表查询
+    Route::get('show', function () {
+        return response()->json(\App\Blog::get());
+    });
+    // 条件查询, 查询构造器和以前的DB对象一样用
+    Route::get('whereShow/{user_id}', function ($user_id) {
+        $list = \App\Blog::where('user_id', $user_id)->get();
+        foreach ($list as &$item) {
+            $item->area = '武汉';
+        }
+        return response()->json($list);
+    });
+    // 修改数据
+    Route::post('update/{id}', function (Request $request, $id) {
+        if (! $request->has('title')) return response('title未设置', 400);
+        $title = $request->input('title');
+
+//        // 获取模型
+//        $blog = \App\Blog::find($id);
+//        // 修改模型值
+//        $blog->title = $title;
+//        // 保存结果
+//        $blog->save();
+//
+//        return response()->json(\App\Blog::find($id));
+
+        // 批量修改
+        \App\Blog::where('id', 7)->update(['title' => '新的标题']);
+    });
+
+    // 删除操作
+
+    Route::delete('delete/{id}', function ($id) {
+        // 第一种删除方式
+//        return \App\Blog::destroy($id);
+        // 第二种删除方式
+//        $blog = \App\Blog::find($id);
+//        return response()->json($blog->delete());
+        // todo 删除表中的所有数据
+    });
 });
 
